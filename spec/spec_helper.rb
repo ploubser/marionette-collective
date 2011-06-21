@@ -8,6 +8,7 @@ gem 'mocha'
 
 require 'rspec'
 require 'mcollective'
+require 'mcollective/test'
 require 'rspec/mocks'
 require 'mocha'
 require 'ostruct'
@@ -18,6 +19,7 @@ require 'monkey_patches/instance_variable_defined'
 
 RSpec.configure do |config|
     config.mock_with :mocha
+    config.include(MCollective::Test::Matchers)
 
     config.before :each do
         MCollective::PluginManager.clear
