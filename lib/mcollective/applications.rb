@@ -36,7 +36,9 @@ module MCollective
                 end
             end
 
-            applist
+            applisti
+        rescue SystemExit
+            exit 1
         rescue Exception => e
             STDERR.puts "Failed to generate application list: #{e.class}: #{e}"
             exit 1
