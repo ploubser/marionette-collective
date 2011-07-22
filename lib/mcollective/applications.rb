@@ -36,7 +36,7 @@ module MCollective
                 end
             end
 
-            applisti
+            applist
         rescue SystemExit
             exit 1
         rescue Exception => e
