@@ -39,6 +39,11 @@ module MCollective
         @testplugin = TestPlugin.new
       end
 
+      before do
+        Ospackage.stubs(:gem).with("fpm", ">= 0.3.11")
+        Ospackage.stubs(:require).with("fpm/program")
+      end
+
       describe "#initialize" do
         it "should correctly identify a RedHat system" do
           File.expects(:exists?).with("/etc/redhat-release").returns(true)

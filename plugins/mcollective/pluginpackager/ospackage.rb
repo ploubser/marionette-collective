@@ -5,7 +5,6 @@ module MCollective
       gem 'fpm', '>= 0.3.11' # TODO: Update to 0.3.12 when Sissel pushes new version of fpm
 
       require 'fpm/program'
-      require 'facter'
       require 'tmpdir' # TODO: Change to a 1.8.5 valid implementation
 
       attr_accessor :package, :libdir, :package_type, :common_dependency, :tmpdir, :workingdir
