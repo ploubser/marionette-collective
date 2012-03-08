@@ -148,7 +148,9 @@ module MCollective
       extension = ".#{extension}" unless extension.match(/^\./)
 
       klasses = find(type, extension).map do |plugin|
-        next unless (block_given? && yield(plugin))
+        if block_given?
+          next unless yield(plugin)
+        end
 
         "%s::%s::%s" % [ "MCollective", type.capitalize, plugin.capitalize ]
       end.compact

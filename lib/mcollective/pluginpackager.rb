@@ -5,14 +5,7 @@ module MCollective
 
     # Package implementation plugins
     def self.load_packagers
-      Config.instance.libdir.each do |libdir|
-        packagedir = "#{libdir}mcollective/pluginpackager"
-        Dir.new(packagedir).grep(/\.rb$/).each do |packager|
-          packagername = File.basename(packager, ".rb")
-          classname = "MCollective::PluginPackager::#{packagername.capitalize}"
-          PluginManager.loadclass(classname) unless PluginManager.include?("#{packagername.capitalize}")
-        end
-      end
+      PluginManager.find_and_load("pluginpackager")
     end
 
     def self.[](klass)
