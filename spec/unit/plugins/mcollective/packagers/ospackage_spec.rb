@@ -9,6 +9,7 @@ module MCollective
   module PluginPackager
     describe Ospackage do
       before :all do
+
         class Ospackage
           ENV = {"PATH" => "."}
         end
@@ -37,11 +38,6 @@ module MCollective
         end
 
         @testplugin = TestPlugin.new
-      end
-
-      before do
-        Ospackage.stubs(:gem).with("fpm", ">= 0.3.11")
-        Ospackage.stubs(:require).with("fpm/program")
       end
 
       describe "#initialize" do
@@ -107,6 +103,10 @@ module MCollective
 
       describe "#create_packages" do
         it "should prepare temp directories, create a package and clean up when done" do
+          Ospackage.any_instance.stubs(:gem).with("fpm", ">= 0.3.11")
+          Ospackage.any_instance.stubs(:require).with("fpm/program")
+          Ospackage.any_instance.stubs(:require).with("tmpdir")
+
           File.expects(:exists?).with("/etc/redhat-release").returns(true)
           Ospackage.any_instance.expects(:build_tool?).with("rpmbuild").returns(true)
           Dir.expects(:mktmpdir).with("mcollective_packager").returns("/tmp/mcollective_packager")
@@ -122,6 +122,13 @@ module MCollective
       end
 
       describe "#create_package" do
+        before do
+          module FPM
+            class Program
+            end
+          end
+        end
+
         it "should run fpm with the correct parameters" do
           File.expects(:exists?).with("/etc/redhat-release").returns(true)
           Ospackage.any_instance.expects(:build_tool?).with("rpmbuild").returns(true)
@@ -130,7 +137,7 @@ module MCollective
           ospackage.expects(:params)
 
           fpm = mock
-          ::FPM::Program.expects(:new).returns(fpm).once
+          FPM::Program.expects(:new).returns(fpm).once
           fpm.expects(:run).once
 
           ospackage.create_package(:testpackage, @testplugin.packagedata[:testpackage])

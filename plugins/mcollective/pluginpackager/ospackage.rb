@@ -2,10 +2,6 @@ module MCollective
   module PluginPackager
     # MCollective plugin packager general OS implementation.
     class Ospackage
-      gem 'fpm', '>= 0.3.11' # TODO: Update to 0.3.12 when Sissel pushes new version of fpm
-
-      require 'fpm/program'
-      require 'tmpdir' # TODO: Change to a 1.8.5 valid implementation
 
       attr_accessor :package, :libdir, :package_type, :common_dependency, :tmpdir, :workingdir
 
@@ -43,6 +39,10 @@ module MCollective
       # Iterate package list creating tmp dirs, building the packages
       # and cleaning up after itself.
       def create_packages
+        gem 'fpm', '>= 0.3.11' # TODO: Update to 0.3.12 when Sissel pushes new version of fpm
+        require 'fpm/program'
+        require 'tmpdir' # TODO: Change to a 1.8.5 valid implementation
+
         @package.packagedata.each do |type, data|
           @tmpdir = Dir.mktmpdir("mcollective_packager")
           @workingdir = File.join(@tmpdir, @libdir)
@@ -55,7 +55,7 @@ module MCollective
 
       # Creates a system specific package with FPM
       def create_package(type, data)
-        ::FPM::Program.new.run params(type, data)
+        FPM::Program.new.run params(type, data)
       end
 
       # Constructs the list of FPM paramaters
