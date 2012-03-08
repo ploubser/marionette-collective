@@ -22,7 +22,7 @@ module MCollective
             @path = "/tmp"
             @packagedata = {:testpackage => {:files => ["/tmp/test.rb"],
                                              :dependencies => ["mcollective"],
-                                             :description => ["testpackage"]}}
+                                             :description => "testpackage"}}
             @iteration = 1
             @postinstall = "/tmp/test.sh"
             @metadata = {:name => "testplugin",
