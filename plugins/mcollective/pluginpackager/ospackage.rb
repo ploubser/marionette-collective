@@ -11,11 +11,11 @@ module MCollective
 
         if File.exists?("/etc/redhat-release")
           @libdir = "usr/libexec/mcollective/mcollective/"
-          @package_type = "rpm"
+          @package_type = "RPM"
           raise "error: package 'rpm-build' is not installed." unless build_tool?("rpmbuild")
         elsif File.exists?("/etc/debian_version")
           @libdir = "usr/share/mcollective/plugins/mcollective"
-          @package_type = "deb"
+          @package_type = "Deb"
           raise "error: package 'ar' is not installed." unless build_tool?("ar")
         else
           raise "error: cannot identify operating system."
@@ -39,8 +39,8 @@ module MCollective
       # Iterate package list creating tmp dirs, building the packages
       # and cleaning up after itself.
       def create_packages
-        gem 'fpm', '>= 0.3.11' # TODO: Update to 0.3.12 when Sissel pushes new version of fpm
-        require 'fpm/program'
+        gem 'fpm', '= 0.4.0pre3' # TODO: Update to correct 0.4 version when it goes live
+        require 'fpm'
         require 'tmpdir' # TODO: Change to a 1.8.5 valid implementation
 
         @package.packagedata.each do |type, data|
@@ -55,38 +55,31 @@ module MCollective
 
       # Creates a system specific package with FPM
       def create_package(type, data)
-        FPM::Program.new.run params(type, data)
+        begin
+          dirpackage = FPM::Package::Dir.new
+          dirpackage.attributes[:chdir] = @tmpdir
+          dirpackage.input @libdir
+          rpmpackage = dirpackage.convert(FPM::Package.const_get(@package_type))
+          params(rpmpackage, type, data)
+          rpmpackage.output("mcollective-#{package.metadata[:name]}-#{type}.#{@package_type.downcase}")
+        ensure
+          rpmpackage.cleanup if rpmpackage
+          dirpackage.cleanup if dirpackage
+        end
       end
 
       # Constructs the list of FPM paramaters
-      def params(type, data)
-        params = standard_params(type)
-        params += package_dependencies(data[:dependencies]) unless data[:dependencies].empty?
-        params += metadata(data)
-        params += postinstall if @package.postinstall
-        params << @libdir
-      end
-
-      # Standard list of FPM parameters
-      def standard_params(type)
-        ["-s", "dir", "-C", @tmpdir, "-t", @package_type, "-a", "all", "-n",
-         "mcollective-#{@package.metadata[:name]}-#{type}", "-v",
-          @package.metadata[:version], "--iteration", @package.iteration.to_s]
-      end
-
-      # Dependencies on other packages in the mcollective package type (Like Agent)
-      # and mcollective itself.
-      def package_dependencies(dependencies)
-        [Array.new(dependencies.size, "-d"), dependencies].transpose.flatten
-      end
-
-      def metadata(data)
-        ["--url", @package.metadata[:url], "--description", @package.metadata[:description] + "\n\n#{data[:description]}",
-        "--license", @package.metadata[:license], "--maintainer", @package.metadata[:author], "--vendor", @package.vendor]
-      end
-
-      def postinstall
-        ["--post-install", @package.postinstall]
+      def params(package, type, data)
+        package.name = "mcollective-#{@package.metadata[:name]}-#{type}"
+        package.maintainer = @package.metadata[:author]
+        package.version = @package.metadata[:version]
+        package.url = @package.metadata[:url]
+        package.license = @package.metadata[:license]
+        package.iteration = @package.iteration
+        package.vendor = @package.vendor
+        package.description = @package.metadata[:description] + "\n\n#{data[:description]}"
+        package.dependencies = data[:dependencies]
+        package.scripts["post-install"] = @package.postinstall if @package.postinstall
       end
 
       # Creates temporary directories and sets working directory from which

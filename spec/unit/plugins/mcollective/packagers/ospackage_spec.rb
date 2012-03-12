@@ -47,7 +47,7 @@ module MCollective
 
           ospackage = Ospackage.new(@testplugin)
           ospackage.libdir.should == "usr/libexec/mcollective/mcollective/"
-          ospackage.package_type.should == "rpm"
+          ospackage.package_type.should == "RPM"
         end
 
         it "should correctly identify a Debian System" do
@@ -57,7 +57,7 @@ module MCollective
 
           ospackage = Ospackage.new(@testplugin)
           ospackage.libdir.should == "usr/share/mcollective/plugins/mcollective"
-          ospackage.package_type.should == "deb"
+          ospackage.package_type.should == "Deb"
         end
 
         it "should raise an exception if it cannot identify the operating system" do
@@ -103,8 +103,8 @@ module MCollective
 
       describe "#create_packages" do
         it "should prepare temp directories, create a package and clean up when done" do
-          Ospackage.any_instance.stubs(:gem).with("fpm", ">= 0.3.11")
-          Ospackage.any_instance.stubs(:require).with("fpm/program")
+          Ospackage.any_instance.stubs(:gem).with("fpm", "= 0.4.0pre3")
+          Ospackage.any_instance.stubs(:require).with("fpm")
           Ospackage.any_instance.stubs(:require).with("tmpdir")
 
           File.expects(:exists?).with("/etc/redhat-release").returns(true)
@@ -124,7 +124,9 @@ module MCollective
       describe "#create_package" do
         before do
           module FPM
-            class Program
+            module Package
+              class Dir;end
+              class RPM;end
             end
           end
         end
@@ -136,9 +138,19 @@ module MCollective
           ospackage = Ospackage.new(@testplugin)
           ospackage.expects(:params)
 
-          fpm = mock
-          FPM::Program.expects(:new).returns(fpm).once
-          fpm.expects(:run).once
+          attributes = {:chdir => nil}
+          fpm_dir = mock
+          fpm_rpm = mock
+
+          FPM::Package::Dir.expects(:new).returns(fpm_dir).once
+          fpm_dir.expects(:attributes).returns(attributes)
+          fpm_dir.expects(:input).with("usr/libexec/mcollective/mcollective/")
+          FPM::Package.expects(:const_get).with("RPM").returns("FPM::Package::RPM")
+          fpm_dir.expects(:convert).with("FPM::Package::RPM").returns(fpm_rpm)
+          fpm_rpm.expects(:output).with("mcollective-testplugin-testpackage.rpm")
+
+          fpm_rpm.expects(:cleanup)
+          fpm_dir.expects(:cleanup)
 
           ospackage.create_package(:testpackage, @testplugin.packagedata[:testpackage])
         end
@@ -148,62 +160,22 @@ module MCollective
         it "should create all paramaters needed by fpm" do
           File.expects(:exists?).with("/etc/redhat-release").returns(true)
           Ospackage.any_instance.expects(:build_tool?).with("rpmbuild").returns(true)
-
           ospackage = Ospackage.new(@testplugin)
-          ospackage.expects(:standard_params).with(:testpackage).returns([])
-          ospackage.expects(:package_dependencies).with(["mcollective"]).returns([])
-          ospackage.expects(:metadata).with(@testplugin.packagedata[:testpackage]).returns([])
 
-          ospackage.params(:testpackage, @testplugin.packagedata[:testpackage])
-        end
-      end
+          fpm_type = mock
+          fpm_type.expects(:name=).with("mcollective-testplugin-testpackage")
+          fpm_type.expects(:maintainer=).with("Psy")
+          fpm_type.expects(:version=).with("0")
+          fpm_type.expects(:url=).with("http://foo.bar.com")
+          fpm_type.expects(:license=).with("Apache 2")
+          fpm_type.expects(:iteration=).with(1)
+          fpm_type.expects(:vendor=).with("Puppet Labs")
+          fpm_type.expects(:description=).with("A Test Plugin\n\ntestpackage")
+          fpm_type.expects(:dependencies=).with(["mcollective"])
+          fpm_type.expects(:scripts).returns({"post-install" => nil})
 
-      describe "#standard_params" do
-        it "should return correctly formatted standard params for fpm" do
-          File.expects(:exists?).with("/etc/redhat-release").returns(true)
-          Ospackage.any_instance.expects(:build_tool?).with("rpmbuild").returns(true)
+          ospackage.params(fpm_type,:testpackage, @testplugin.packagedata[:testpackage])
 
-          ospackage = Ospackage.new(@testplugin)
-          params = ospackage.standard_params(:testpackage)
-          params.should == ["-s", "dir", "-C", @tmpdir, "-t", "rpm", "-a", "all", "-n",
-                           "mcollective-testplugin-testpackage", "-v", "0", "--iteration", "1"]
-        end
-      end
-
-      describe "#package_dependencies" do
-        it "should return dependencies in the correct format" do
-          File.expects(:exists?).with("/etc/redhat-release").returns(true)
-          Ospackage.any_instance.expects(:build_tool?).with("rpmbuild").returns(true)
-
-          ospackage = Ospackage.new(@testplugin)
-          params = ospackage.package_dependencies(["mcollective"])
-          params.should == ["-d", "mcollective"]
-          params = ospackage.package_dependencies(["mcollective", "another-dependency"])
-          params.should == ["-d", "mcollective", "-d", "another-dependency"]
-        end
-      end
-
-      describe "#metadata" do
-        it "should return metadata parameters" do
-          File.expects(:exists?).with("/etc/redhat-release").returns(true)
-          Ospackage.any_instance.expects(:build_tool?).with("rpmbuild").returns(true)
-
-          ospackage = Ospackage.new(@testplugin)
-          params = ospackage.metadata(@testplugin.packagedata[:testpackage])
-          params.should == ["--url", "http://foo.bar.com", "--description",
-            "A Test Plugin\n\ntestpackage", "--license", "Apache 2", "--maintainer", "Psy",
-            "--vendor", "Puppet Labs"]
-        end
-      end
-
-      describe "#postinstall" do
-        it "should return postinstall parameters if post install script is defined" do
-          File.expects(:exists?).with("/etc/redhat-release").returns(true)
-          Ospackage.any_instance.expects(:build_tool?).with("rpmbuild").returns(true)
-
-          ospackage = Ospackage.new(@testplugin)
-          params = ospackage.postinstall
-          params.should == ["--post-install", "/tmp/test.sh"]
         end
       end
 
