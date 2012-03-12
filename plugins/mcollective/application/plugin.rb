@@ -5,7 +5,7 @@ module MCollective
 
     description "MCollective Plugin Application"
     usage <<-END_OF_USAGE
-mco plugin [info|package|inspect] [options] <directory>
+mco plugin [info|package|doc] [options] <directory>
 
    info : Display plugin information including package details.
 package : Create all available plugin packages.
