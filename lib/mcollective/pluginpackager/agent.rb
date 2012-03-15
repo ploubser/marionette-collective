@@ -68,7 +68,7 @@ module MCollective
 
         commondir = File.join(@path, "util")
         common[:files] += Dir.glob("#{commondir}/*") if check_dir commondir
-        common
+        common[:files].empty? ? nil : common
       end
 
       # Load plugin meta data from ddl file.
@@ -76,7 +76,8 @@ module MCollective
         ddl = MCollective::RPC::DDL.new("package", false)
         ddl.instance_eval File.read(Dir.glob("#{@path}/agent/*.ddl").first)
         ddl.meta
-      rescue
+      rescue Exception => e
+        puts e
         raise "error: could not read agent DDL File"
       end
 

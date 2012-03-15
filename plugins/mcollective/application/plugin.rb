@@ -70,6 +70,11 @@ package : Create all available plugin packages.
       packager.new(plugin).create_packages
     end
 
+    def generate_command
+      #PluginGenerator.const_get(configuration[:target].capitalize).new({:name => "testplugin"})
+      PluginGenerator.const_get(configuration[:target].capitalize).new("testplugin", YAML.load(File.read("testplugin.yaml")), true)
+    end
+
     # Show application list and RPC agent help
     def doc_command
       if configuration.include?(:target) && configuration[:target] != "."

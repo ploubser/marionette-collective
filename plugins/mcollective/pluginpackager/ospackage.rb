@@ -44,12 +44,14 @@ module MCollective
         require 'tmpdir' # TODO: Change to a 1.8.5 valid implementation
 
         @package.packagedata.each do |type, data|
-          @tmpdir = Dir.mktmpdir("mcollective_packager")
-          @workingdir = File.join(@tmpdir, @libdir)
-          FileUtils.mkdir_p @workingdir
-          prepare_tmpdirs data
-          create_package type, data
-          cleanup_tmpdirs
+          if data
+            @tmpdir = Dir.mktmpdir("mcollective_packager")
+            @workingdir = File.join(@tmpdir, @libdir)
+            FileUtils.mkdir_p @workingdir
+            prepare_tmpdirs data
+            create_package type, data
+            cleanup_tmpdirs
+          end
         end
       end
 
@@ -86,8 +88,8 @@ module MCollective
       # the packagke will be built.
       def prepare_tmpdirs(data)
         data[:files].each do |file|
-          targetdir = File.join(@workingdir, File.dirname(file).gsub(@package.target_path, ""))
-          target = FileUtils.mkdir(targetdir) unless File.directory? targetdir
+          targetdir = File.join(@workingdir, File.dirname(file).gsub(@package.target_path.split("/").last, ""))
+          target = FileUtils.mkdir_p(targetdir) unless File.directory? targetdir
           FileUtils.cp_r(file, targetdir)
         end
       end
