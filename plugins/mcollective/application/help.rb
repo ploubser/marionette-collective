@@ -9,8 +9,7 @@ module MCollective
 
     def main
       if configuration.include?(:agent)
-        ddl = MCollective::RPC::DDL.new(configuration[:agent])
-        puts ddl.help(Config.instance.rpchelptemplate)
+        abort("Please use 'mco plugin help #{configuration[:agent]}' to view documentation for an agent")
       else
         puts "The Marionette Collective version #{MCollective.version}"
         puts

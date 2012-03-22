@@ -78,13 +78,7 @@ mco plugin package [options] <directory>
         ddl = MCollective::RPC::DDL.new(configuration[:target])
         puts ddl.help(configuration[:rpctemplate] || Config.instance.rpchelptemplate)
       else
-        puts "The Marionette Collective version #{MCollective.version}"
-        puts
-
-        PluginManager.find("agent", "ddl").each do |ddl|
-          help = MCollective::RPC::DDL.new(ddl)
-          puts "  %-15s %s" % [ddl, help.meta[:description]]
-        end
+        abort("error. Please specify an agent.")
       end
     end
 
@@ -116,7 +110,7 @@ mco plugin package [options] <directory>
     end
 
     def main
-        abort "No action specified" unless configuration.include?(:action)
+        abort "No action specified. Valid actions are [#{list_actions}]." unless configuration.include?(:action)
 
         cmd = "#{configuration[:action]}_command"
 
