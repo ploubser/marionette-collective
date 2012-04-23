@@ -127,19 +127,19 @@ mco plugin package [options] <directory>
 
     # Creates the correct package plugin object.
     def prepare_plugin
-        plugintype = set_plugin_type unless configuration[:plugintype]
-        configuration[:format] = "ospackage" unless configuration[:format]
-        PluginPackager.load_packagers
-        plugin_class = PluginPackager[configuration[:plugintype]]
-        configuration[:dependency] = configuration[:dependency][0].split(" ") if configuration[:dependency] && configuration[:dependency].size == 1
-        mcodependency = {:server => configuration[:mcserver],
-                         :client => configuration[:mcclient],
-                         :common => configuration[:mccommon]}
+      plugintype = set_plugin_type unless configuration[:plugintype]
+      configuration[:format] = "ospackage" unless configuration[:format]
+      PluginPackager.load_packagers
+      plugin_class = PluginPackager[configuration[:plugintype]]
+      configuration[:dependency] = configuration[:dependency][0].split(" ") if configuration[:dependency] && configuration[:dependency].size == 1
+      mcodependency = {:server => configuration[:mcserver],
+                       :client => configuration[:mcclient],
+                       :common => configuration[:mccommon]}
 
-        plugin_class.new(configuration[:target], configuration[:pluginname],
-                         configuration[:vendor], configuration[:preinstall],
-                         configuration[:postinstall], configuration[:iteration],
-                         configuration[:dependency], mcodependency , plugintype)
+      plugin_class.new(configuration[:target], configuration[:pluginname],
+                       configuration[:vendor], configuration[:preinstall],
+                       configuration[:postinstall], configuration[:iteration],
+                       configuration[:dependency], mcodependency , plugintype)
     end
 
     def directory_for_type(type)
@@ -178,15 +178,15 @@ mco plugin package [options] <directory>
     end
 
     def main
-        abort "No action specified" unless configuration.include?(:action)
+      abort "No action specified" unless configuration.include?(:action)
 
-        cmd = "#{configuration[:action]}_command"
+      cmd = "#{configuration[:action]}_command"
 
-        if respond_to? cmd
-          send cmd
-        else
-          abort "Invalid action #{configuration[:action]}. Valid actions are [#{list_actions}]."
-        end
+      if respond_to? cmd
+        send cmd
+      else
+        abort "Invalid action #{configuration[:action]}. Valid actions are [#{list_actions}]."
+      end
     end
   end
 end

@@ -155,7 +155,7 @@ module MCollective
         @argv_backup.each{|a| ARGV << a}
       end
 
-      it "should support boolean options" do
+      it "should support boolean options as :boolean" do
         Application.any_instance.stubs("main").returns(true)
 
         Application.option :foo,
@@ -172,6 +172,26 @@ module MCollective
 
         ARGV.clear
         @argv_backup.each{|a| ARGV << a}
+      end
+
+      it "should support boolean options as :bool" do
+        Application.any_instance.stubs("main").returns(true)
+
+        Application.option :foo,
+                           :description => "meh",
+                           :arguments => "--foo",
+                           :type => :bool
+
+        ARGV.clear
+        ARGV << "--foo"
+
+        a = Application.new
+        a.run
+        a.configuration.should == {:foo=>true}
+
+        ARGV.clear
+        @argv_backup.each{|a| ARGV << a}
+
       end
 
       it "should set the application description as head" do
