@@ -24,6 +24,13 @@ module MCollective
       end
     end
 
+    describe "#pluginname" do
+      it "should return the correct plugin name" do
+        Data.pluginname("Rspec").should == "rspec_data"
+        Data.pluginname("Rspec_data").should == "rspec_data"
+      end
+    end
+
     describe "#[]" do
       it "should return the correct plugin" do
         PluginManager.expects("[]").with("rspec_data").times(4)
@@ -48,6 +55,23 @@ module MCollective
         PluginManager.expects("[]").with("rspec_data").returns(rspec_data)
 
         Data.rspec_data("rspec").should == "rspec"
+      end
+    end
+
+    describe "#ddl_has_output?" do
+      it "should correctly verify output keys" do
+        ddl = mock
+        ddl.stubs(:entities).returns({:data => {:output => {:rspec => {}}}})
+        Data.ddl_has_output?(ddl, "rspec").should == true
+        Data.ddl_has_output?(ddl, :rspec).should == true
+        Data.ddl_has_output?(ddl, :foo).should == false
+        Data.ddl_has_output?(ddl, "foo").should == false
+      end
+
+      it "should return false for any exception" do
+        ddl = mock
+        ddl.stubs(:entities).returns(nil)
+        Data.ddl_has_output?(ddl, "rspec").should == false
       end
     end
 

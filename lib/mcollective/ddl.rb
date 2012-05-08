@@ -258,36 +258,36 @@ module MCollective
     def validate_input_argument(input, key, argument)
       case input[key][:type]
         when :string
-          raise DDLValidationError, "Input #{key} should be a string" unless argument.is_a?(String)
+          raise DDLValidationError, "Input #{key} should be a string for plugin #{meta[:name]}" unless argument.is_a?(String)
 
           if input[key][:maxlength].to_i > 0
             if argument.size > input[key][:maxlength].to_i
-              raise DDLValidationError, "Input #{key} is longer than #{input[key][:maxlength]} character(s)"
+              raise DDLValidationError, "Input #{key} is longer than #{input[key][:maxlength]} character(s) for plugin #{meta[:name]}"
             end
           end
 
           unless argument.match(Regexp.new(input[key][:validation]))
-            raise DDLValidationError, "Input #{key} does not match validation regex #{input[key][:validation]}"
+            raise DDLValidationError, "Input #{key} does not match validation regex #{input[key][:validation]} for plugin #{meta[:name]}"
           end
 
         when :list
           unless input[key][:list].include?(argument)
-            raise DDLValidationError, "Input #{key} doesn't match list #{input[key][:list].join(', ')}"
+            raise DDLValidationError, "Input #{key} doesn't match list #{input[key][:list].join(', ')} for plugin #{meta[:name]}"
           end
 
         when :boolean
           unless [TrueClass, FalseClass].include?(argument.class)
-            raise DDLValidationError, "Input #{key} should be a boolean"
+            raise DDLValidationError, "Input #{key} should be a boolean for plugin #{meta[:name]}"
           end
 
         when :integer
-          raise DDLValidationError, "Input #{key} should be a integer" unless argument.is_a?(Fixnum)
+          raise DDLValidationError, "Input #{key} should be a integer for plugin #{meta[:name]}" unless argument.is_a?(Fixnum)
 
         when :float
-          raise DDLValidationError, "Input #{key} should be a floating point number" unless argument.is_a?(Float)
+          raise DDLValidationError, "Input #{key} should be a floating point number for plugin #{meta[:name]}" unless argument.is_a?(Float)
 
         when :number
-          raise DDLValidationError, "Input #{key} should be a number" unless argument.is_a?(Numeric)
+          raise DDLValidationError, "Input #{key} should be a number for plugin #{meta[:name]}" unless argument.is_a?(Numeric)
       end
     end
 
