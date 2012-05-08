@@ -317,5 +317,27 @@ module MCollective
 
       true
     end
+
+    # As we're taking arguments on the command line we need a
+    # way to input booleans, true on the cli is a string so this
+    # method will take the ddl, find all arguments that are supposed
+    # to be boolean and if they are the strings "true"/"yes" or "false"/"no"
+    # turn them into the matching boolean
+    def self.string_to_boolean(val)
+      return true if ["true", "yes", "1"].include?(val.downcase)
+      return false if ["false", "no", "0"].include?(val.downcase)
+
+      raise "#{val} does not look like a boolean argument"
+    end
+
+    # a generic string to number function, if a number looks like a float
+    # it turns it into a float else an int.  This is naive but should be sufficient
+    # for numbers typed on the cli in most cases
+    def self.string_to_number(val)
+      return val.to_f if val =~ /^\d+\.\d+$/
+      return val.to_i if val =~ /^\d+$/
+
+      raise "#{val} does not look like a number"
+    end
   end
 end
