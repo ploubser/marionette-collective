@@ -58,7 +58,7 @@ module MCollective
               @token_errors << c_token_value
 
             when "and"
-              unless (n_token =~ /not|fstatement|statement|\(/) || (scanner.token_index == scanner.arguments.size)
+              unless (n_token =~ /not|fstatement|statement|\(/) || (scanner.token_index == scanner.arguments.size) && !(n_token == nil)
                 @parse_errors << [pre_index, scanner.token_index]
               end
 
@@ -69,7 +69,7 @@ module MCollective
               end
 
             when "or"
-              unless (n_token =~ /not|fstatement|statement|\(/) || (scanner.token_index == scanner.arguments.size)
+              unless (n_token =~ /not|fstatement|statement|\(/) || (scanner.token_index == scanner.arguments.size) && !(n_token == nil)
                 @parse_errors << [pre_index, scanner.token_index]
               end
 
@@ -80,7 +80,7 @@ module MCollective
               end
 
             when "not"
-              unless n_token =~ /fstatement|statement|\(|not/
+              unless n_token =~ /fstatement|statement|\(|not/ && !(n_token == nil)
                 @parse_errors << [pre_index, scanner.token_index]
               end
 

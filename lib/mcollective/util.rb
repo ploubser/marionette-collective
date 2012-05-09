@@ -327,7 +327,7 @@ module MCollective
 
       # Prevent unwanted discovery by limiting comparison operators
       # on Strings and Booleans
-      if((l_compare.is_a?(String) || l_compare.is?(TrueClass) || l_compare.is?(FalseClass)) && function_hash["operator"].match(/<|>/))
+      if((l_compare.is_a?(String) || l_compare.is_a?(TrueClass) || l_compare.is_a?(FalseClass)) && function_hash["operator"].match(/<|>/))
         Log.debug "Cannot do > and < comparison on Booleans and Strings '#{l_compare} #{function_hash["operator"]} #{function_hash["r_compare"]}'"
         return false
       end
