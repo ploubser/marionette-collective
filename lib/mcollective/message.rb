@@ -154,6 +154,10 @@ module MCollective
               raise DDLValidationError, "Could not find DDL for data plugin #{pluginname}, cannot use #{functionname}() in discovery"
             end
 
+            # parses numbers and booleans entered as strings into proper
+            # types of data so that DDL validation will pass
+            statement["fstatement"][:params] = Data.ddl_transform_input(ddl, statement["fstatement"][:params])
+
             Data.ddl_validate(ddl, statement["fstatement"][:params])
 
             unless value && Data.ddl_has_output?(ddl, value)

@@ -47,5 +47,18 @@ module MCollective
     def self.ddl_has_output?(ddl, output)
       ddl.entities[:data][:output].include?(output.to_sym) rescue false
     end
+
+    def self.ddl_transform_input(ddl, input)
+      type = ddl.entities[:data][:input][:query][:type]
+
+      case type
+        when :boolean
+          return DDL.string_to_boolean(input)
+        when :number, :integer, :float
+          return DDL.string_to_number(input)
+      end
+
+      return input
+    end
   end
 end
