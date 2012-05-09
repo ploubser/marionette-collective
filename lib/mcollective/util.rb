@@ -299,7 +299,12 @@ module MCollective
     def self.create_function_hash(function_call)
       func_hash = {}
       func, func_hash["operator"], func_hash["r_compare"] = function_call.split(/(>=|<=|<|>|=)/)
-      f, func_hash["value"] = func.split(".")
+
+      # Deal with dots in function parameters
+      func_parts = func.split(".")
+      func_hash["value"] = func_parts.pop
+      f = func_parts.join(".")
+
       func_hash["name"], func_hash["params"] = f.split("(")
       func_hash["params"] = func_hash["params"].gsub(")", "").gsub("'", "")
 
