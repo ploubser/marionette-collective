@@ -48,14 +48,25 @@ module MCollective
       ddl.entities[:data][:output].include?(output.to_sym) rescue false
     end
 
+    # For an input where the DDL requests a boolean or some number
+    # this will convert the input to the right type where possible
+    # else just returns the origin input unedited
+    #
+    # if anything here goes wrong just return the input value
+    # this is not really the end of the world or anything since
+    # all that will happen is that DDL validation will fail and
+    # the user will get an error, no need to be too defensive here
     def self.ddl_transform_input(ddl, input)
-      type = ddl.entities[:data][:input][:query][:type]
+      begin
+        type = ddl.entities[:data][:input][:query][:type]
 
-      case type
-        when :boolean
-          return DDL.string_to_boolean(input)
-        when :number, :integer, :float
-          return DDL.string_to_number(input)
+        case type
+          when :boolean
+            return DDL.string_to_boolean(input)
+          when :number, :integer, :float
+            return DDL.string_to_number(input)
+        end
+      rescue
       end
 
       return input

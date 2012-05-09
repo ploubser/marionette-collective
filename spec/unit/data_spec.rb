@@ -58,6 +58,10 @@ module MCollective
       end
     end
 
+    describe "#ddl_transform_intput" do
+      it "should have tests"
+    end
+
     describe "#ddl_has_output?" do
       it "should correctly verify output keys" do
         ddl = mock
