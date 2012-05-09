@@ -17,34 +17,28 @@ module MCollective
 
       # Exit and highlight any malformed tokens
       def exit_with_token_errors
-        puts "Error. Malformed token(s) found while parsing -S input"
         @token_errors.each do |error_range|
           (error_range[0]..error_range[1]).each do |i|
             @scanner.arguments[i] = Util.colorize(:red, @scanner.arguments[i])
           end
         end
-        puts @scanner.arguments.join
-        exit 1
+        raise "Malformed token(s) found while parsing -S input #{@scanner.arguments.join}"
       end
 
       def exit_with_parse_errors
-        puts "Error. Parser errors found while parsing -S input"
         @parse_errors.each do |error_range|
           (error_range[0]..error_range[1]).each do |i|
             @scanner.arguments[i] = Util.colorize(:red, @scanner.arguments[i])
           end
         end
-        puts @scanner.arguments.join
-        exit 1
+        raise "Parse errors found while parsing -S input #{ @scanner.arguments.join}"
       end
 
       def exit_with_paren_errors
-        puts "Error. Missing parenthesis found while parsing -S input"
         @paren_errors.each do |i|
           @scanner.arguments[i] = Util.colorize(:red, @scanner.arguments[i])
         end
-        puts @scanner.arguments.join
-        exit 1
+        raise "Missing parenthesis found while parsing -S input #{@scanner.arguments.join}"
       end
 
       # Parse the input string, one token at a time a contruct the call stack
