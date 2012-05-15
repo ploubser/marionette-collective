@@ -41,7 +41,7 @@ module MCollective
 
       # Grab function name and parameters from left compare string
       func_hash["name"], func_hash["params"] = f.split("(")
-      func_hash["params"] = func_hash["params"].gsub(")", "").gsub("'", "")
+      func_hash["params"] = func_hash["params"].gsub(")", "").gsub(/'|"/, "")
 
       func_hash
     end
@@ -76,7 +76,7 @@ module MCollective
       end
 
       # Escape strings for evaluation
-      function_hash["r_compare"] = "\"#{function_hash["r_compare"]}\"" if(l_compare.is_a?(String) && l_compare.match(/\".+\"/) && !(function_hash["operator"] =~ /=~|!=~/))
+      function_hash["r_compare"] = "\"#{function_hash["r_compare"]}\"" if(l_compare.is_a?(String)  && !(function_hash["operator"] =~ /=~|!=~/))
 
       # Do a regex comparison if right compare string is a regex
       if function_hash["operator"] =~ /(=~|!=~)/
@@ -95,6 +95,7 @@ module MCollective
         end
         # Otherwise evaluate the logical comparison
       else
+        l_compare = "\"#{l_compare}\"" if l_compare.is_a?(String)
         result = eval("#{l_compare} #{function_hash["operator"]} #{function_hash["r_compare"]}")
         (result.nil?) ? false : result
       end
