@@ -68,6 +68,9 @@ action "get_fact", :description => "Retrieve a single fact from the fact store" 
      output :value,
             :description => "The value of the fact",
             :display_as => "Value"
+
+    summerize "total(:value)"
+    picture "%s = %s"
 end
 
 action "daemon_stats", :description => "Get statistics from the running daemon" do
@@ -156,6 +159,9 @@ action "get_config_item", :description => "Get the active value of a specific co
     output :value,
            :description => "The value that is in use",
            :display_as => "Value"
+
+    summarize ["total(value)"]
+    picture "Total %s : %s"
 end
 
 action "ping", :description => "Responds to requests for PING with PONG" do
@@ -164,4 +170,7 @@ action "ping", :description => "Responds to requests for PING with PONG" do
     output :pong,
            :description => "The local timestamp",
            :display_as => "Timestamp"
+
+    summarize ["avg_ping(:pong])"]
+    picture "Average Ping: %.2f ms"
 end

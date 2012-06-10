@@ -143,6 +143,43 @@ module MCollective
         result_text
       end
 
+      def self.rpcsummarize(result, flags = {})
+        ddl = DDL.new(result.first.agent).action_interface(result.first.action.to_s)
+
+        # Simple parse currently only allows us to summarize an action with one
+        # client side function.
+        # TODO: Consider extending the parsing to include multiple functions
+        #       How do we combine functions?
+
+        summarize = Summarize.new
+
+        # Iterate the list of summaries (which can be one) and build the resulting
+        # structure for display
+
+        display_array = []
+        ddl[:summarize].each do |summary|
+
+          # Simple parse of the summary string
+          function, result_fields = summary.split('(')
+          result_fields = result_fields.gsub(')', '').split(',').map{|x| x.gsub(':', '').to_sym}
+          function = function.to_sym
+
+          # Build the list of values sent to the function as arguments
+          args = []
+
+          result_fields.each do |field|
+            result.each do |r|
+              args << r.results[:data][field]
+            end
+          end
+
+          # Store the result, referred to as :value, in the display_array
+          display_array << summarize.call_function(function.to_sym, args)[:value]
+        end
+
+        summarize.display(ddl[:picture], display_array)
+      end
+
       # Return text representing a result
       def self.text_for_result(sender, status, msg, result, ddl)
         statusses = ["",

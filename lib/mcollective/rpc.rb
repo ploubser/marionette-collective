@@ -145,12 +145,24 @@ module MCollective
     #
     # To get details of each result run with the -v command line option.
     def printrpc(result, flags = {})
+
+      ddl = DDL.new(result.first.agent).action_interface(result.first.action)
+
+      # Set the default output display method.
+      text_method = "rpcresults"
+
+      # Identify if the action output needs to be summarized
+      if ddl.keys.include?(:summarize) && ddl.keys.include?(:picture)
+        # Change the text_method if it does
+        text_method = "rpcsummarize"
+      end
+
       verbose = @options[:verbose] rescue verbose = false
       verbose = flags[:verbose] || verbose
       flatten = flags[:flatten] || false
       format = @options[:output_format]
 
-      result_text =  Helpers.rpcresults(result, {:verbose => verbose, :flatten => flatten, :format => format})
+      result_text = Helpers.send(text_method, result, {:verbose => verbose, :flatten => flatten, :format => format})
 
       if result.is_a?(Array) && format == :console
         puts "\n%s\n" % [ result_text ]

@@ -108,6 +108,8 @@ class MCollective::Application::Rpc<MCollective::Application
 
       mc.discover discover_args
 
+      rpcresult = mc.send(configuration[:action], configuration[:arguments])
+
       printrpc mc.send(configuration[:action], configuration[:arguments])
 
       printrpcstats :caption => "#{configuration[:agent]}##{configuration[:action]} call stats" if mc.discover.size > 0

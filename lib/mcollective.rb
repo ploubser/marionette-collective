@@ -46,6 +46,7 @@ module MCollective
   autoload :DDL, "mcollective/ddl"
   autoload :Discovery, "mcollective/discovery"
   autoload :Facts, "mcollective/facts"
+  autoload :Functions, "mcollective/functions"
   autoload :Logger, "mcollective/logger"
   autoload :Log, "mcollective/log"
   autoload :Matcher, "mcollective/matcher"
@@ -61,6 +62,7 @@ module MCollective
   autoload :Security, "mcollective/security"
   autoload :Shell, "mcollective/shell"
   autoload :SSL, "mcollective/ssl"
+  autoload :Summarize, "mcollective/summarize"
   autoload :Util, "mcollective/util"
   autoload :Vendor, "mcollective/vendor"
 

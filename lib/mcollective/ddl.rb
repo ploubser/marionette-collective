@@ -232,6 +232,16 @@ module MCollective
       @entities[action][:display] = pref
     end
 
+    # Sets the summarize string that we use to run client side functions
+    def summarize(function)
+      @entities[@current_entity][:summarize] = function
+    end
+
+    # Sets the picture value used to display the summary results
+    def picture(picture)
+      @entities[@current_entity][:picture] = picture
+    end
+
     def template_for_plugintype
       case @plugintype
         when :agent
