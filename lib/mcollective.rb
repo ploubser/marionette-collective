@@ -65,6 +65,7 @@ module MCollective
   autoload :Shell, "mcollective/shell"
   autoload :SSL, "mcollective/ssl"
   autoload :Util, "mcollective/util"
+  autoload :Validators, "mcollective/validators"
   autoload :Vendor, "mcollective/vendor"
 
   MCollective::Vendor.load_vendored

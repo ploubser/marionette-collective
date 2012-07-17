@@ -296,45 +296,7 @@ module MCollective
       def validate(key, validation)
         raise MissingRPCData, "please supply a #{key} argument" unless @request.include?(key)
 
-        if validation.is_a?(Regexp)
-          raise InvalidRPCData, "#{key} should match #{validation}" unless @request[key].match(validation)
-
-        elsif validation.is_a?(Symbol)
-          case validation
-          when :shellsafe
-            raise InvalidRPCData, "#{key} should be a String" unless @request[key].is_a?(String)
-
-            ['`', '$', ';', '|', '&&', '>', '<'].each do |chr|
-              raise InvalidRPCData, "#{key} should not have #{chr} in it" if @request[key].match(Regexp.escape(chr))
-            end
-
-          when :ipv6address
-            begin
-              require 'ipaddr'
-              ip = IPAddr.new(@request[key])
-              raise InvalidRPCData, "#{key} should be an ipv6 address" unless ip.ipv6?
-            rescue
-              raise InvalidRPCData, "#{key} should be an ipv6 address"
-            end
-
-          when :ipv4address
-            begin
-              require 'ipaddr'
-              ip = IPAddr.new(@request[key])
-              raise InvalidRPCData, "#{key} should be an ipv4 address" unless ip.ipv4?
-            rescue
-              raise InvalidRPCData, "#{key} should be an ipv4 address"
-            end
-
-          when :boolean
-            raise InvalidRPCData, "#{key} should be boolean" unless [TrueClass, FalseClass].include?(@request[key].class)
-          end
-        elsif validation.is_a?(Array)
-          raise InvalidRPCData, "#{key} should be one of %s" % [ validation.join(", ") ] unless validation.include?(@request[key])
-
-        else
-          raise InvalidRPCData, "#{key} should be a #{validation}" unless  @request[key].is_a?(validation)
-        end
+        @ddl.validate(key, @request[key], validation)
       end
 
       # convenience wrapper around Util#shellescape

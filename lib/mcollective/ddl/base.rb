@@ -90,41 +90,45 @@ module MCollective
       # :string can have maxlength and regex.  A maxlength of 0 will bypasss checks
       # :list has a array of valid values
       def validate_input_argument(input, key, argument)
+        Validators.load_validators
+
         case input[key][:type]
           when :string
-            raise DDLValidationError, "Input #{key} should be a string for plugin #{meta[:name]}" unless argument.is_a?(String)
+            validate(key, argument, :string)
 
             if input[key][:maxlength].to_i > 0
-              if argument.size > input[key][:maxlength].to_i
-                raise DDLValidationError, "Input #{key} is longer than #{input[key][:maxlength]} character(s) for plugin #{meta[:name]}"
-              end
+              Validators.length(key, argument, input[key][:maxlength].to_i)
             end
 
-            unless argument.match(Regexp.new(input[key][:validation]))
-              raise DDLValidationError, "Input #{key} does not match validation regex #{input[key][:validation]} for plugin #{meta[:name]}"
-            end
+            validate(key, argument, input[key][:validation])
 
           when :list
-            unless input[key][:list].include?(argument)
-              raise DDLValidationError, "Input #{key} doesn't match list #{input[key][:list].join(', ')} for plugin #{meta[:name]}"
-            end
+            validate(key, argument, input[key][:list])
 
-          when :boolean
-            unless [TrueClass, FalseClass].include?(argument.class)
-              raise DDLValidationError, "Input #{key} should be a boolean for plugin #{meta[:name]}"
-            end
-
-          when :integer
-            raise DDLValidationError, "Input #{key} should be a integer for plugin #{meta[:name]}" unless argument.is_a?(Fixnum)
-
-          when :float
-            raise DDLValidationError, "Input #{key} should be a floating point number for plugin #{meta[:name]}" unless argument.is_a?(Float)
-
-          when :number
-            raise DDLValidationError, "Input #{key} should be a number for plugin #{meta[:name]}" unless argument.is_a?(Numeric)
+          else
+            validate(key, argument, input[key][:type])
         end
 
         return true
+      end
+
+      # Generic validate method that will call the correct validator
+      # plugin based on the type of the validation parameter
+      def validate(key, validator, validation)
+        Validators.load_validators
+
+        if [:integer, :boolean, :float, :number, :string].include?(validation)
+          Validators.typecheck(key, validator, validation)
+        else
+          case validation
+            when Regexp,String
+              Validators.regex(key, validator, validation)
+            when Symbol
+              Validators.send(validation, key, validator) 
+            when Array
+              Validators.array(key, validator, validation)
+          end
+        end
       end
 
       # Registers an input argument for a given action

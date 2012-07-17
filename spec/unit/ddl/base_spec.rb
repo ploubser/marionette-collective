@@ -47,6 +47,11 @@ module MCollective
       end
 
       describe "#validate_input_arguments" do
+#        before :all do
+#          Config.instance.stubs(:configured).returns(true)
+#          Config.instance.stubs(:libdir).returns([File.join(File.dirname(__FILE__), "../../../plugins")])
+#        end
+
         it "should ensure strings are String" do
           @ddl.action(:string, :description => "rspec")
           @ddl.instance_variable_set("@current_entity", :string)
