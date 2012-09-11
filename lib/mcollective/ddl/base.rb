@@ -53,7 +53,7 @@ module MCollective
           metastring = metastring.result(binding)
         end
 
-        erb = ERB.new(template, 0, '%')
+        erb = ERB.new(template, 0, '-')
         erb.result(binding)
       end
 
