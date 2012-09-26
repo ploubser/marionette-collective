@@ -17,6 +17,7 @@ module MCollective
                      :starttime => 1300031826.0,
                      :requestid => nil,
                      :aggregate_summary => [],
+                     :aggregate_failures => [],
                      :discovered_nodes => []}
 
         @stats = Stats.new
@@ -281,6 +282,41 @@ module MCollective
           @stats.finish_request
 
           @stats.no_response_report.should match(Regexp.new(/No response from.+bar\s+foo/m))
+        end
+      end
+
+      describe "#text_for_aggregates" do
+        let(:aggregate){mock()}
+
+        before :each do
+          aggregate.stubs(:result).returns({:output => "success"})
+          aggregate.stubs(:action).returns("action")
+        end
+
+        it "should create the correct output text for aggregate functions" do
+          @stats.aggregate_summary = [aggregate]
+          aggregate.stubs(:is_a?).returns(true)
+          @stats.text_for_aggregates.should =~ /Summary of.*/
+        end
+
+        it "should display an error message for a failed statup hook" do
+          @stats.aggregate_failures = [{:name => "rspec", :type => :startup}]
+          @stats.text_for_aggregates.should =~  /exception raised while processing startup hook/
+        end
+
+        it "should display an error message for an unspecified output" do
+          @stats.aggregate_failures = [{:name => "rspec", :type => :create}]
+          @stats.text_for_aggregates.should =~  /unspecified output 'rspec' for the action/
+        end
+
+        it "should display an error message for a failed process_result" do
+          @stats.aggregate_failures = [{:name => "rspec", :type => :process_result}]
+          @stats.text_for_aggregates.should =~  /exception raised while processing result data/
+        end
+
+        it "should display an error message for a failed summarize" do
+          @stats.aggregate_failures = [{:name => "rspec", :type => :summarize}]
+          @stats.text_for_aggregates.should =~  /exception raised while summarizing/
         end
       end
     end
