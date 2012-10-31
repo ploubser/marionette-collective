@@ -35,6 +35,10 @@ module MCollective
         self[:usage] << usage
       end
 
+      def sub_commands(*args)
+        @@sub_commands = args
+      end
+
       def exclude_argument_sections(*sections)
         sections = [sections].flatten
 
@@ -115,7 +119,6 @@ module MCollective
         if block_given?
           yield(parser, options)
         end
-
         RPC::Helpers.add_simplerpc_options(parser, options) unless application_options[:exclude_arg_sections].include?("rpc")
       end
 
@@ -130,8 +133,11 @@ module MCollective
       application_failure(e)
     end
 
+
+
     # Builds an ObjectParser config, parse the CLI options and validates based
     # on the option config
+    # TODO
     def application_parse_options(help=false)
       @options ||= {:verbose => false}
 
@@ -275,7 +281,20 @@ module MCollective
     # The main logic loop, builds up the options, validate configuration and calls
     # the main as supplied by the user.  Disconnects when done and pass any exception
     # onto the application_failure helper
+    # TODO
     def run
+      if ARGV[0] && !ARGV[0].match(/^--/)
+        action = ARGV[0]
+
+        if self.class.const_defined?(action.capitalize)
+          self.class.const_get(action.capitalize).options
+          self.class[:usage].pop
+          self.class[:usage] << self.class.const_get(action.capitalize).usage
+        else
+          abort "#{action} is not a defined action"
+        end
+      end
+
       application_parse_options
 
       validate_configuration(configuration) if respond_to?(:validate_configuration)
@@ -295,7 +314,7 @@ module MCollective
     rescue
     end
 
-    # Fake abstract class that logs if the user tries to use an application without
+    # Fake abstract method that logs if the user tries to use an application without
     # supplying a main override method.
     def main
       STDERR.puts "Applications need to supply a 'main' method"
