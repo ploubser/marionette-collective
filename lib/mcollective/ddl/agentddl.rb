@@ -157,7 +157,7 @@ module MCollective
         input = action_interface(action)[:input] || {}
 
         input.keys.each do |key|
-          unless input[key][:optional]
+          if !input[key][:optional] && !input[key][:default]
             unless arguments.keys.include?(key)
               raise DDLValidationError, "Action #{action} needs a #{key} argument"
             end

@@ -60,6 +60,13 @@ module MCollective
           @req.delete(:callerid)
           Request.new(@req, @ddl).caller.should == "unknown"
         end
+
+        it "should add a default input value to the request if one is specified" do
+          input = {:input => {:foo => {:default => "bar"}}}
+          ddl = DDL.new("rspec", :agent, false)
+          ddl.entities[:test] = input
+          Request.new(@req, ddl).data[:foo].should == "bar"
+        end
       end
 
       describe "#include?" do

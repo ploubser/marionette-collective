@@ -13,6 +13,17 @@ module MCollective
         @uniqid = msg[:requestid]
         @caller = msg[:callerid] || "unknown"
         @ddl = ddl
+
+        # If a default value for an input is defined and no
+        # input value is present in the request, add the default
+        # value to the request.
+        if @ddl.entities[@action] && @ddl.entities[@action][:input]
+          @ddl.entities[@action][:input].each do |k,v|
+            if v[:default] && !@data[k]
+              @data[k] = v[:default]
+            end
+          end
+        end
       end
 
       # If data is a hash, quick helper to get access to it's include? method

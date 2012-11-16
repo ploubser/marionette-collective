@@ -159,7 +159,8 @@ module MCollective
         @entities[entity][:input][argument] = {:prompt => properties[:prompt],
                                                :description => properties[:description],
                                                :type => properties[:type],
-                                               :optional => properties[:optional]}
+                                               :optional => properties[:optional],
+                                               :default => properties[:default]}
 
         case properties[:type]
           when :string
