@@ -299,7 +299,7 @@ mco plugin package [options] <directory>
     # To keep it simple we limit it to one type per target directory.
     def identify_plugin
       plugintype = Dir.glob(File.join(configuration[:target], "*")).select do |file|
-        File.directory?(file) && file.match(/(connector|facts|registration|security|audit|pluginpackager|data|discovery|validator)/)
+        File.directory?(file) && file.match(/(authorization|connector|facts|registration|security|audit|pluginpackager|data|discovery|validator)/)
       end
 
       raise RuntimeError, "more than one plugin type detected in directory" if plugintype.size > 1

@@ -243,6 +243,66 @@ module MCollective
         end
       end
 
+      describe "#authorized_by" do
+        it "should fail if the authorization plugin does not exist" do
+          PluginManager.stubs(:find).with("authorization").returns([])
+          PluginManager.stubs(:find).with("util").returns([])
+
+          expect{
+            Agent.authorized_by("rspec_policy")
+          }.to raise_error
+        end
+
+        it "should create the correct authorization_hook for a auth plugin in MCollective::Authorization" do
+          PluginManager.stubs(:find).with("authorization").returns(["rspecpolicy"])
+          RPC::Agent.stubs(:load_authorization_plugin).with("RspecPolicy", "Authorization").returns("MCollective::Authorization::RspecPolicy")
+          RPC::Agent.expects(:class_eval).with("def authorization_hook(request);MCollective::Authorization::RspecPolicy.authorize(request);end")
+          Agent.authorized_by("rspec_policy")
+        end
+
+        it "should create the correct authorization_hook for a auth plugin in MCollective::Authorization" do
+          PluginManager.stubs(:find).with("authorization").returns([])
+          PluginManager.stubs(:find).with("util").returns(["rspecpolicy"])
+          RPC::Agent.stubs(:load_authorization_plugin).with("RspecPolicy", "Util").returns("MCollective::Util::RspecPolicy")
+          RPC::Agent.expects(:class_eval).with("def authorization_hook(request);MCollective::Util::RspecPolicy.authorize(request);end")
+          Agent.authorized_by("rspec_policy")
+        end
+      end
+
+      describe "#load_authorization_plugin" do
+        it "should load an authorization plugin from the Authorization module and return the full name" do
+          MCollective.stubs(:constants).returns([])
+          PluginManager.expects("loadclass").with("MCollective::Authorization::RspecPolicy")
+          result = Agent.load_authorization_plugin("RspecPolicy", "Authorization")
+          result.should == "MCollective::Authorization::RspecPolicy"
+        end
+
+        it "should load an authorization plugin from the Authorization module only once" do
+          module MCollective::Authorization;end;
+          MCollective.stubs(:constants).returns([], ["Authorization"])
+          MCollective::Authorization.stubs(:constants).returns(["RspecPolicy"])
+          PluginManager.expects("loadclass").with("MCollective::Authorization::RspecPolicy").once
+          Agent.load_authorization_plugin("RspecPolicy", "Authorization")
+          result = Agent.load_authorization_plugin("RspecPolicy", "Authorization")
+          result.should == "MCollective::Authorization::RspecPolicy"
+        end
+
+        it "should load an authorization plugin from the Util module and return the full name" do
+          MCollective::Util.stubs(:constants).returns([])
+          PluginManager.expects("loadclass").with("MCollective::Util::RspecPolicy")
+          result = Agent.load_authorization_plugin("RspecPolicy", "Util")
+          result.should == "MCollective::Util::RspecPolicy"
+        end
+
+        it "should load an authorization plugin from the Util module only once" do
+          MCollective::Util.stubs(:constants).returns([], ["RspecPolicy"])
+          PluginManager.expects("loadclass").with("MCollective::Util::RspecPolicy").once
+          Agent.load_authorization_plugin("RspecPolicy", "Util")
+          result = Agent.load_authorization_plugin("RspecPolicy", "Util")
+          result.should == "MCollective::Util::RspecPolicy"
+        end
+      end
+
       describe "#validate" do
         it "should detect missing data" do
           @agent.request = {}

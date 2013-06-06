@@ -271,18 +271,41 @@ module MCollective
       # plugin.  If your plugin raises an exception that will abort the request
       def self.authorized_by(plugin)
         plugin = plugin.to_s.capitalize
-
-        # turns foo_bar into FooBar
         plugin = plugin.to_s.split("_").map {|v| v.capitalize}.join
-        pluginname = "MCollective::Util::#{plugin}"
 
-        PluginManager.loadclass(pluginname) unless MCollective::Util.constants.include?(plugin)
+        if PluginManager.find("authorization").include?(plugin.downcase)
+          pluginmodule = "Authorization"
 
-        class_eval("
-                      def authorization_hook(request)
-                   #{pluginname}.authorize(request)
-                      end
-                   ")
+        elsif PluginManager.find("util").include?(plugin.downcase)
+          pluginmodule = "Util"
+          Log.warn("Placing authorization plugins in the MCollective::Util module will be deprecated in a future release.")
+          Log.warn("Please use MCollective::Authorization instead")
+
+        else
+          raise "Cannot load Authorization plugin '%s'" % plugin
+        end
+
+        pluginname = load_authorization_plugin(plugin, pluginmodule)
+
+        class_eval("def authorization_hook(request);#{pluginname}.authorize(request);end")
+      end
+
+      def self.load_authorization_plugin(plugin, pluginmodule)
+        if pluginmodule == "Authorization"
+          pluginname = "MCollective::Authorization::%s" % plugin
+
+          unless(MCollective.constants.include?("Authorization") && MCollective::Authorization.constants.include?(plugin))
+            PluginManager.loadclass(pluginname)
+          end
+        elsif pluginmodule == "Util"
+          pluginname = "MCollective::Util::%s" % plugin
+
+          unless MCollective::Util.constants.include?(plugin)
+            PluginManager.loadclass(pluginname)
+          end
+        end
+
+        pluginname
       end
 
       # Validates a data member, if validation is a regex then it will try to match it
