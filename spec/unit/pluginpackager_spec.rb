@@ -92,6 +92,8 @@ module MCollective
       end
 
       it "should raise an exception and reset stdout if the block raises an execption" do
+        File.stubs(:new).with("/dev/null", "w")
+        STDOUT.stubs(:reopen)
         expect{
           PluginPackager.do_quietly?(false) {raise Exception, "exception"}
         }.to raise_error(Exception, "exception")
