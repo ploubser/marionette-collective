@@ -17,7 +17,7 @@ module MCollective
 
         hosts = File.readlines(file).map do |host|
           host = host.chomp
-          raise 'Identities can only match /\w\.\-/' unless host.match(/^[\w\.\-]+$/)
+          raise 'Identities can only match (\w+(\.{0,1}|\-{0,1})\w+)+' unless host.match(/^(\w+(\.{0,1}|\-{0,1})\w+)+$/)
           host
         end
 

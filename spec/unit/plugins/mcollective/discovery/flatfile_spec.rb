@@ -44,12 +44,12 @@ module MCollective
         end
 
         it "should fail for invalid identities" do
-          [" one", "two ", " three ", "four four"].each do |host|
+          [" one", "two ", " three ", "four four", "five..five", "six.", "seven---", "-eight", "nine-"].each do |host|
             File.expects(:readlines).with("/nonexisting").returns([host])
 
             expect {
               Flatfile.discover(Util.empty_filter, 0, 0, @client).should == ["one", "two", "three", "four"]
-            }.to raise_error('Identities can only match /\w\.\-/')
+            }.to raise_error('Identities can only match (\w+(\.{0,1}|\-{0,1})\w+)+')
           end
         end
       end
