@@ -37,6 +37,13 @@ module MCollective
     # Sends a request and returns the generated request id, doesn't wait for
     # responses and doesn't execute any passed in code blocks for responses
     def sendreq(msg, agent, filter = {})
+      request = create_request(msg, agent, filter)
+      request.publish
+      request.requestid
+    end
+
+    # Create a request
+    def create_request(msg, agent, filter ={})
       if msg.is_a?(Message)
         request = msg
         agent = request.agent
@@ -52,9 +59,7 @@ module MCollective
 
       subscribe(agent, :reply) unless request.reply_to
 
-      request.publish
-
-      request.requestid
+      request
     end
 
     def subscribe(agent, type)
@@ -145,21 +150,29 @@ module MCollective
       begin
         Log.debug("Publishing request to agent %s with timeout %d" % [agent, timeout])
 
-        Timeout.timeout(timeout) do
-          reqid = sendreq(body, agent, @options[:filter])
+        publish_request = create_request(body, agent, @options[:filter])
 
-          loop do
-            resp = receive(reqid)
+        # Publishing thread
+        publisher = Thread.new do
+          publish_request.publish
+        end
 
-            hosts_responded += 1
-
-            yield(resp.payload)
-
-            break if (waitfor != 0 && hosts_responded >= waitfor)
+        # Receiving thread
+        receiver = Thread.new do
+          Timeout.timeout(timeout) do
+            begin
+              resp = receive(publish_request.requestid)
+              hosts_responded += 1
+              yield(resp.payload)
+            end while (waitfor == 0 || hosts_responded < waitfor)
           end
         end
+
+        receiver.join
       rescue Interrupt => e
       rescue Timeout::Error => e
+        receiver.kill if receiver.alive?
+        publisher.kill if publisher.alive?
       ensure
         unsubscribe(agent, :reply)
       end
