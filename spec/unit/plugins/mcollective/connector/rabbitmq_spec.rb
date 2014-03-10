@@ -327,7 +327,7 @@ module MCollective
         it "should raise an error on failure to receive a frame" do
           @connection.expects(:receive).returns(nil)
 
-          expect { @c.receive }.to raise_error(/No message received/)
+          expect { @c.receive }.to raise_error(MessageNotReceived)
         end
 
         it "should log non-MESSAGE frames" do

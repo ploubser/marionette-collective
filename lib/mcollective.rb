@@ -32,6 +32,7 @@ module MCollective
   class NotTargettedAtUs<RuntimeError;end
   class RPCError<StandardError;end
   class SecurityValidationFailed<RuntimeError;end
+  class MessageNotReceived<RuntimeError; end
 
   class InvalidRPCData<RPCError;end
   class MissingRPCData<RPCError;end

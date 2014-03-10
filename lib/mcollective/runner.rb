@@ -74,6 +74,11 @@ module MCollective
         rescue NotTargettedAtUs => e
           Log.debug("Message does not pass filters, ignoring")
 
+        rescue MessageNotReceived => e
+          Log.warn("Did not receive a message from the middleware")
+          # TODO(richardc): consider exponential backoff here
+          sleep 20
+
         rescue Exception => e
           Log.warn("Failed to handle message: #{e} - #{e.class}\n")
           Log.warn(e.backtrace.join("\n\t"))

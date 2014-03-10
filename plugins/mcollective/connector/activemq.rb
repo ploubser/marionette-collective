@@ -347,7 +347,7 @@ module MCollective
 
         # In older stomp gems an attempt to receive after failed authentication can return nil
         if msg.nil?
-          raise("No message received from ActiveMQ.")
+          raise MessageNotReceived
         end
 
         # We expect all messages we get to be of STOMP frame type MESSAGE, log any outliers

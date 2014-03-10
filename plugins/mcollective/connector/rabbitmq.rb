@@ -243,7 +243,7 @@ module MCollective
 
         # In older stomp gems an attempt to receive after failed authentication can return nil
         if msg.nil?
-          raise("No message received from RabbitMQ.")
+          raise MessageNotReceived
         end
 
         raise "Received a processing error from RabbitMQ: '%s'" % msg.body.chomp if msg.body =~ /Processing error/

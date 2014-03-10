@@ -63,5 +63,32 @@ module MCollective
         }.to raise_error 'failure'
       end
     end
+
+    describe '#run' do
+      let(:runner) do
+        Runner.new(nil)
+      end
+
+      before :each do
+        Data.stubs(:load_data_sources)
+        Util.stubs(:make_subscriptions)
+        Util.stubs(:subscribe)
+        config.stubs(:direct_addressing).returns(false)
+      end
+
+      it 'should recieve a message' do
+        connector.expects(:receive)
+        runner.stop
+        runner.run
+      end
+
+      it 'should handle MessageNotReceived' do
+        connector.stubs(:receive).raises(MessageNotReceived)
+        Log.expects(:warn)
+        runner.expects(:sleep).with(20)
+        runner.stop
+        runner.run
+      end
+    end
   end
 end
