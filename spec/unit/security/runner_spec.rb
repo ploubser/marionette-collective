@@ -83,9 +83,9 @@ module MCollective
       end
 
       it 'should handle MessageNotReceived' do
-        connector.stubs(:receive).raises(MessageNotReceived)
+        connector.stubs(:receive).raises(MessageNotReceived.new(15))
         Log.expects(:warn)
-        runner.expects(:sleep).with(20)
+        runner.expects(:sleep).with(15)
         runner.stop
         runner.run
       end

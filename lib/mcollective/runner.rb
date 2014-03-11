@@ -76,8 +76,10 @@ module MCollective
 
         rescue MessageNotReceived => e
           Log.warn("Did not receive a message from the middleware")
-          # TODO(richardc): consider exponential backoff here
-          sleep 20
+          if e.backoff
+            Log.debug("sleeping for suggested #{e.backoff} seconds")
+            sleep e.backoff
+          end
 
         rescue Exception => e
           Log.warn("Failed to handle message: #{e} - #{e.class}\n")

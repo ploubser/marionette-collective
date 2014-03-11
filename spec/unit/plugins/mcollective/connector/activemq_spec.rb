@@ -294,6 +294,27 @@ module MCollective
         end
       end
 
+      describe '#exponential_back_off' do
+        it "should not do anything when use_exponential_back_off is off" do
+          Activemq.any_instance.stubs(:get_bool_option).with('activemq.use_exponential_back_off', 'true').returns(false)
+          connector = Activemq.new
+          connector.exponential_back_off.should == nil
+        end
+
+        it 'should back off with simple maths for richards head' do
+          Activemq.any_instance.stubs(:get_bool_option).with('activemq.use_exponential_back_off', 'true').returns(true)
+          Activemq.any_instance.stubs(:get_option).with('plugin.activemq.initial_reconnect_delay', 0.01).returns('5')
+          Activemq.any_instance.stubs(:get_option).with('plugin.activemq.back_off_multiplier', 2).returns('2')
+          Activemq.any_instance.stubs(:get_option).with('plugin.activemq.max_reconnect_delay', 30.0).returns('30')
+          connector = Activemq.new
+          connector.use_exponential_back_off.should == 5
+          connector.use_exponential_back_off.should == 10
+          connector.use_exponential_back_off.should == 20
+          connector.use_exponential_back_off.should == 30
+          connector.use_exponential_back_off.should == 30
+        end
+      end
+
       describe "#receive" do
         it "should receive from the middleware" do
           payload = mock
