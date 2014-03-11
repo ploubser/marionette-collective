@@ -199,7 +199,7 @@ module MCollective
           @base64 = get_bool_option("activemq.base64", "false")
           @msgpriority = get_option("activemq.priority", 0).to_i
 
-          pools = @config.pluginconf["activemq.pool.size"].to_i
+          pools = Integer(get_option("activemq.pool.size"))
           hosts = []
 
           1.upto(pools) do |poolnum|
